@@ -154,7 +154,7 @@ class SplitCrossEntropyLoss(nn.Module):
         if apply_thresh == 'eval' and self.training: apply_threshold = False
         if apply_thresh == 'train' and not self.training: apply_threshold = False
         if apply_thresh == 'none': apply_threshold = False
-        print(apply_threshold)
+        print(self.training, apply_threshold)
         if apply_threshold:
             all_head_res = self.apply_threshold(all_head_res, combo)
 
