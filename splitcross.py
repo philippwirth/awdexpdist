@@ -122,7 +122,7 @@ class SplitCrossEntropyLoss(nn.Module):
             split_hiddens.append(hiddens.masked_select(tmp_mask.unsqueeze(1).expand_as(hiddens)).view(-1, hiddens.size(1)))
         return split_targets, split_hiddens
 
-    def forward(self, weight, bias, hiddens, targets, verbose=False):
+    def forward(self, weight, bias, hiddens, targets, apply_thresh='none', verbose=False):
         if self.verbose or verbose:
             for idx in sorted(self.stats):
                 print('{}: {}'.format(idx, int(np.mean(self.stats[idx]))), end=', ')
@@ -149,7 +149,15 @@ class SplitCrossEntropyLoss(nn.Module):
         combo = torch.cat([split_hiddens[i] for i in range(self.nsplits) if len(split_hiddens[i])])
         ###
         all_head_res = torch.nn.functional.linear(combo, head_weight, bias=head_bias)
-        all_head_res = self.apply_threshold(all_head_res, combo)
+
+        apply_threshold = True
+        if apply_thresh == 'eval' and self.training: apply_threshold = False
+        if apply_thresh == 'train' and not self.training: apply_threshold = False
+        if apply_thresh == 'none': apply_threshold = False
+        print(apply_threshold)
+        if apply_threshold:
+            all_head_res = self.apply_threshold(all_head_res, combo)
+            
         softmaxed_all_head_res = torch.nn.functional.log_softmax(all_head_res, dim=-1)
         if self.verbose or verbose:
             self.stats[0].append(combo.size()[0] * head_weight.size()[0])
