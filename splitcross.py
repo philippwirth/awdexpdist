@@ -23,7 +23,7 @@ class SplitCrossEntropyLoss(nn.Module):
             self.tail_vectors = nn.Parameter(torch.zeros(self.nsplits - 1, hidden_size))
             self.tail_bias = nn.Parameter(torch.zeros(self.nsplits - 1))
 
-        self.thresh = DynamicThreshold(400, 650, 4, 1)
+        self.thresh = DynamicThreshold(100, 100, 4, 1)
 
     def apply_threshold(self, d, h):
         amin = d.min()
