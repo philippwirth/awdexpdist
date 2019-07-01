@@ -166,7 +166,7 @@ def evaluate(data_source, epoch, batch_size=1):
     for i in range(0, data_source.size(0) - 1, args.bptt):
         data, targets = get_batch(data_source, i, args, evaluation=True)
         output, hidden = model(data, hidden)
-        raw_loss, entropy = criterion(model.decoder.weight, model.decoder.bias, output, targets)
+        raw_loss, entropy = criterion(model.decoder.weight, model.decoder.bias, output, targets, model.training)
         total_loss += len(data) * raw_loss.data
         hidden = repackage_hidden(hidden)
         #entropies.append(entropy)
@@ -204,7 +204,7 @@ def train():
         optimizer.zero_grad()
 
         output, hidden, rnn_hs, dropped_rnn_hs = model(data, hidden, return_h=True)
-        raw_loss, _ = criterion(model.decoder.weight, model.decoder.bias, output, targets)
+        raw_loss, _ = criterion(model.decoder.weight, model.decoder.bias, output, targets, model.training)
 
         loss = raw_loss
         # Activiation Regularization
