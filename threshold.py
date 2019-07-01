@@ -20,11 +20,11 @@ def soft_threshold2(d, r, inf=1e4):
 	# f(d,r) = d if d < r else r + exp(d-r) - 1
 	if len(d.size()) > 1:
 		idxs = d > r
-		dnew = r + torch.exp(d - r) - 1
+		dnew = r + torch.exp(10*(d - r)) - 1
 		dnew[idxs] = d[idxs]
 	else:
 		idxs = (d > r).view(d.size(0))
-		dnew = r + torch.exp(d - r) - 1
+		dnew = r + torch.exp(10*(d - r)) - 1
 		dnew[idxs] = d[idxs]
 
 	return torch.clamp(dnew, max=inf)

@@ -158,6 +158,7 @@ print('Model total parameters:', total_params)
 def evaluate(data_source, epoch, batch_size=1):
     # Turn on evaluation mode which disables dropout.
     model.eval()
+    criterion.eval()
     if args.model == 'QRNN': model.reset()
     total_loss = 0
     entropies = []
@@ -196,6 +197,7 @@ def train():
         lr2 = optimizer.param_groups[0]['lr']
         optimizer.param_groups[0]['lr'] = lr2 * seq_len / args.bptt
         model.train()
+        criterion.train()
         data, targets = get_batch(train_data, i, args, seq_len=seq_len)
 
         # Starting each batch, we detach the hidden state from how it was previously produced.
