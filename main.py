@@ -13,7 +13,7 @@ from visualize.dump import dump
 from utils import batchify, get_batch, repackage_hidden
 
 parser = argparse.ArgumentParser(description='PyTorch PennTreeBank RNN/LSTM Language Model')
-parser.add_argument('--data', type=str, default='data/penn_vv/', #penn/',
+parser.add_argument('--data', type=str, default='data/penn/', #penn/',
                     help='location of the data corpus')
 parser.add_argument('--model', type=str, default='RNN',
                     help='type of recurrent net (LSTM, QRNN, GRU)')
