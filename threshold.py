@@ -18,14 +18,14 @@ def soft_threshold1(d, r, inf=1e4):
 def soft_threshold2(d, r, inf=1e4):
 	# continuous at d = r 
 	# f(d,r) = d if d < r else r + exp(d-r) - 1
-        if len(d.size()) > 1:
-            idxs = d > r
-	    dnew = r + torch.exp(d - r) - 1
-	    dnew[idxs] = d[idxs]
-        else:
-            idxs = (d > r).view(d.size(0))
-            dnew = r + torch.exp(d - r) - 1
-            dnew[idxs] = d[idxs]
+	if len(d.size()) > 1:
+		idxs = d > r
+		dnew = r + torch.exp(d - r) - 1
+		dnew[idxs] = d[idxs]
+	else:
+		idxs = (d > r).view(d.size(0))
+		dnew = r + torch.exp(d - r) - 1
+		dnew[idxs] = d[idxs]
 
 	return torch.clamp(dnew, max=inf)
 
@@ -53,8 +53,8 @@ class DynamicThreshold(nn.Module):
 		# get r from neural net
 		r = self.net(hiddens)
 		if r.size(0) > 1: r = r.repeat(1, 10000)
-                return soft_threshold2(d, r, inf)
-                '''
+		return soft_threshold2(d, r, inf)
+		'''
 		if len(d.size()) > 1:
 			idxs = d > r
 			dnew = r - 1 + torch.exp(self.temp*(d - r))
@@ -65,4 +65,4 @@ class DynamicThreshold(nn.Module):
 			dnew[idxs] = d[idxs]
 		
 		return torch.clamp(dnew, max=inf), r
-                '''
+		'''
