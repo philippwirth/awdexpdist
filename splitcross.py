@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 
 import numpy as np
-from threshold import DynamicThreshold
+from threshold import DynamicThreshold, hard_threshold, soft_threshold1, soft_threshold2
 
 class SplitCrossEntropyLoss(nn.Module):
     r'''SplitCrossEntropyLoss calculates an approximate softmax'''
-    def __init__(self, hidden_size, splits, verbose=False):
+    def __init__(self, hidden_size, splits, thresh_settings=['hard', 100, 200, 8, 1], verbose=False):
         # We assume splits is [0, split1, split2, N] where N >= |V|
         # For example, a vocab of 1000 words may have splits [0] + [100, 500] + [inf]
         super(SplitCrossEntropyLoss, self).__init__()
@@ -23,11 +23,23 @@ class SplitCrossEntropyLoss(nn.Module):
             self.tail_vectors = nn.Parameter(torch.zeros(self.nsplits - 1, hidden_size))
             self.tail_bias = nn.Parameter(torch.zeros(self.nsplits - 1))
 
-        self.thresh = DynamicThreshold(100, 200, 8, 1)
+        self.thresh_settings = thresh_settings
+        self.radius = -1000
+        if thresh_settings[0] == 'hard':
+            self.thresh = hard_threshold
+        if thresh_settings[0] == 'soft1':
+            self.thresh = soft_threshold1
+        if thresh_settings[0] == 'soft2':
+            self.thresh = soft_threshold2
+        else:
+            self.thresh = DynamicThreshold(*thresh_settings[1:])
 
     def apply_threshold(self, d, h):
-        amin = d.min()
-        d, r = self.thresh(d, h)
+
+        if self.thresh_settings[0] in ['hard', 'soft1', 'soft2']:
+            d = self.thresh(d, r=self.radius)
+        else:
+            d, r = self.thresh(d, h)
         #print(amin, r.mean())
         return d
 
@@ -122,7 +134,7 @@ class SplitCrossEntropyLoss(nn.Module):
             split_hiddens.append(hiddens.masked_select(tmp_mask.unsqueeze(1).expand_as(hiddens)).view(-1, hiddens.size(1)))
         return split_targets, split_hiddens
 
-    def forward(self, weight, bias, hiddens, targets, training, apply_thresh='both', verbose=False):
+    def forward(self, weight, bias, hiddens, targets, training, apply_thresh='eval', verbose=False):
         if self.verbose or verbose:
             for idx in sorted(self.stats):
                 print('{}: {}'.format(idx, int(np.mean(self.stats[idx]))), end=', ')

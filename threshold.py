@@ -1,30 +1,36 @@
 import torch
 import torch.nn as nn
 
-def hard_threshold(d, r, inf=1e4):
+def hard_threshold(d, r, inf=1e8):
 	# set every distance larger than r to inf
 	d[d >= r] = inf
 	return d
 
-def soft_threshold1(d, r, inf=1e4):
+def soft_threshold1(d, r, inf=1e8):
 	# continuous at d = r
 	# f(d,r) = d if d < r else r * exp(d - r)
-	idxs = d < r
-	dnew = r * torch.exp(d - r)
-	dnew[idxs] = d[idxs]
+	if len(d.size()) > 1:
+		idxs = d > r
+		dnew = r + torch.exp(d - r) - 1
+		dnew[idxs] = d[idxs]
+	else:
+		idxs = (d > r).view(d.size(0))
+		dnew = r + torch.exp(d - r) - 1
+		dnew[idxs] = d[idxs]
+
 	return torch.clamp(dnew, max=inf)
 
 
-def soft_threshold2(d, r, inf=1e4):
+def soft_threshold2(d, r, inf=1e8):
 	# continuous at d = r 
 	# f(d,r) = d if d < r else r + exp(d-r) - 1
 	if len(d.size()) > 1:
 		idxs = d > r
-		dnew = r + torch.exp(10*(d - r)) - 1
+		dnew = r + torch.exp(d - r) - 1
 		dnew[idxs] = d[idxs]
 	else:
 		idxs = (d > r).view(d.size(0))
-		dnew = r + torch.exp(10*(d - r)) - 1
+		dnew = r + torch.exp(d - r) - 1
 		dnew[idxs] = d[idxs]
 
 	return torch.clamp(dnew, max=inf)
@@ -53,7 +59,7 @@ class DynamicThreshold(nn.Module):
 		# get r from neural net
 		r = self.net(hiddens)
 		if r.size(0) > 1: r = r.repeat(1, 10000)
-		return soft_threshold2(d, r, inf), r
+		return soft_threshold2(d, r, inf)
 		'''
 		if len(d.size()) > 1:
 			idxs = d > r
