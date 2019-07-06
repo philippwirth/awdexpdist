@@ -8,7 +8,7 @@ from threshold import DynamicThreshold, hard_threshold, soft_threshold1, soft_th
 
 class SplitCrossEntropyLoss(nn.Module):
     r'''SplitCrossEntropyLoss calculates an approximate softmax'''
-    def __init__(self, hidden_size, splits, thresh_settings=['hard', 100, 200, 8, 1], verbose=False):
+    def __init__(self, hidden_size, splits, thresh_settings=['dynamic', 100, 150, 4, 1], verbose=False):
         # We assume splits is [0, split1, split2, N] where N >= |V|
         # For example, a vocab of 1000 words may have splits [0] + [100, 500] + [inf]
         super(SplitCrossEntropyLoss, self).__init__()
@@ -24,20 +24,20 @@ class SplitCrossEntropyLoss(nn.Module):
             self.tail_bias = nn.Parameter(torch.zeros(self.nsplits - 1))
 
         self.thresh_settings = thresh_settings
-        self.radius = -1000
+        self.radius = -0.5
         if thresh_settings[0] == 'hard':
             self.thresh = hard_threshold
         if thresh_settings[0] == 'soft1':
             self.thresh = soft_threshold1
         if thresh_settings[0] == 'soft2':
             self.thresh = soft_threshold2
-        else:
+        if thresh_settings[0] == 'dynamic':
             self.thresh = DynamicThreshold(*thresh_settings[1:])
 
     def apply_threshold(self, d, h):
 
         if self.thresh_settings[0] in ['hard', 'soft1', 'soft2']:
-            d = self.thresh(d, r=self.radius)
+            d = self.thresh(d, self.radius)
         else:
             d, r = self.thresh(d, h)
         #print(amin, r.mean())

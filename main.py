@@ -23,7 +23,7 @@ parser.add_argument('--nhid', type=int, default=100,
                     help='number of hidden units per layer')
 parser.add_argument('--nlayers', type=int, default=1,
                     help='number of layers')
-parser.add_argument('--lr', type=float, default=0.02,
+parser.add_argument('--lr', type=float, default=1,
                     help='initial learning rate')
 parser.add_argument('--clip', type=float, default=0.25,
                     help='gradient clipping')
