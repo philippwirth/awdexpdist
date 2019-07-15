@@ -34,8 +34,10 @@ class SplitCrossEntropyLoss(nn.Module):
         if thresh_settings[0] == 'dynamic':
             self.thresh = DynamicThreshold(*thresh_settings[1:])
 
-        self.b_h = nn.Linear(hidden_size, 1).bias
-        self.b_w = nn.Linear(100, 10000).bias
+        self.lin_b_h = nn.Linear(hidden_size, 1)
+        self.b_h = self.lin_b_h.bias
+        self.lin_b_w = nn.Linear(100, 10000)
+        self.b_w = self.lin_b_w.bias
 
     def apply_threshold(self, d, h):
 
