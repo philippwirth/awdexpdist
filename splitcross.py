@@ -34,13 +34,16 @@ class SplitCrossEntropyLoss(nn.Module):
         if thresh_settings[0] == 'dynamic':
             self.thresh = DynamicThreshold(*thresh_settings[1:])
 
+        self.b_h = nn.Embedding(1, hidden_size).bias
+        self.b_w = nn.Embedding(10000, 100).bias
+
     def apply_threshold(self, d, h):
 
         if self.thresh_settings[0] in ['hard', 'soft1', 'soft2']:
-            d = self.thresh(d, self.radius)
+            d = self.thresh(d + self.b_h + self.b_w, self.radius)
         else:
-            d, r = self.thresh(d, h)
-        print(d.min(), d.max(), r.min(), r.max())
+            d, r = self.thresh(d + self.b_h + self.b_w, h)
+        print(self.b_h)
         return d
 
     def distance(self, hiddens, weight, bias):
