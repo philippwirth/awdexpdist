@@ -35,7 +35,7 @@ def soft_threshold2(d, r, inf=1e8):
 
 	return torch.clamp(dnew, max=inf)
 
-def init_weights(m, a=0., b=-1):
+def init_weights(m, a=0., b=-5):
 	if type(m) == nn.Linear:
 		torch.nn.init.uniform_(m.weight, a, b)
 		return m

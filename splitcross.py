@@ -40,7 +40,7 @@ class SplitCrossEntropyLoss(nn.Module):
             d = self.thresh(d, self.radius)
         else:
             d, r = self.thresh(d, h)
-        #print(amin, r.mean())
+        print(d.min(), d.max(), r.min(), r.max())
         return d
 
     def distance(self, hiddens, weight, bias):
@@ -134,7 +134,7 @@ class SplitCrossEntropyLoss(nn.Module):
             split_hiddens.append(hiddens.masked_select(tmp_mask.unsqueeze(1).expand_as(hiddens)).view(-1, hiddens.size(1)))
         return split_targets, split_hiddens
 
-    def forward(self, weight, bias, hiddens, targets, training, apply_thresh='eval', verbose=False):
+    def forward(self, weight, bias, hiddens, targets, training, apply_thresh='both', verbose=False):
         if self.verbose or verbose:
             for idx in sorted(self.stats):
                 print('{}: {}'.format(idx, int(np.mean(self.stats[idx]))), end=', ')
